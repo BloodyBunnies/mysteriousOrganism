@@ -1,0 +1,120 @@
+// Returns a random DNA base
+const returnRandBase = () => {
+  const dnaBases = ["A", "T", "C", "G"];
+  return dnaBases[Math.floor(Math.random() * 4)];
+};
+
+// Returns a random single stand of DNA containing 15 bases
+const mockUpStrand = () => {
+  const newStrand = [];
+  for (let i = 0; i < 15; i++) {
+    newStrand.push(returnRandBase());
+  }
+  return newStrand;
+};
+
+// Create DNA factory!
+let willLikelySurvive = [];
+let complementedStrand = [];
+const pAequorFactory = (number, array) => {
+  return {
+    specimenNum: number,
+    dna: array,
+    // Helper method to generate a random base that is not equal to the given base
+    returnRandBase(base) {
+      const bases = ["A", "C", "T", "G"];
+      let newBase;
+      do {
+        newBase = bases[Math.floor(Math.random() * 4)];
+      } while (newBase === base);
+      return newBase;
+    },
+
+    // Change the base to a new random
+    // If random selected first base is A, must be changed to T, C, G, but it cannot be A again
+    mutate() {
+      const randomIndex = Math.floor(Math.random() * this.dna.length);
+      const currentBase = this.dna[randomIndex];
+      const newBase = this.returnRandBase(currentBase);
+      this.dna[randomIndex] = newBase;
+      return this.dna;
+    },
+    compareDNA(otherPaequor) {
+      let identicalBases = 0;
+      for (let i = 0; i < this.dna.length; i++) {
+        if (this.dna[i] === otherPaequor.dna[i]) {
+          identicalBases++;
+        }
+      }
+      const percentage = (identicalBases / this.dna.length) * 100;
+    },
+    willLikelySurvive() {
+      let countCG = 0;
+      for (let i = 0; i < this.dna.length; i++) {
+        if (this.dna[i] === "C" || this.dna[i] === "G") {
+          countCG++;
+        }
+      }
+      const percentageCG = (countCG / this.dna.length) * 100;
+      if (percentageCG >= 60) {
+        willLikelySurvive.push(this.dna);
+        complementedStrand.push(this.complementStrand());
+      }
+    },
+    complementStrand() {
+      let complementStrand = [];
+      for (let i = 0; i < this.dna.length; i++) {
+        switch (this.dna[i]) {
+          case "A":
+            complementStrand.push("T");
+            break;
+          case "T":
+            complementStrand.push("A");
+            break;
+          case "C":
+            complementStrand.push("G");
+            break;
+          case "G":
+            complementStrand.push("C");
+            break;
+          default:
+            console.log("Unknown Letter " + this.dna[i]);
+        }
+      }
+      return complementStrand;
+    },
+  };
+};
+
+let pAequor = [];
+let num = 1;
+let inx = 0;
+while (willLikelySurvive.length < 30) {
+  pAequor.push(pAequorFactory(num, mockUpStrand()));
+  pAequor[inx].mutate();
+  if (inx === 0) {
+    inx++;
+    num++;
+    continue;
+  }
+  pAequor[inx].compareDNA(pAequor[inx - 1]);
+  pAequor[inx].willLikelySurvive();
+  inx++;
+  num++;
+}
+
+console.log("SURVIVAL RESULTS");
+console.log("---------------------------------------------");
+for (let x = 0; x < willLikelySurvive.length; x++) {
+  let surviveString = "";
+  let complimentString = "";
+  for (let y = 0; y < willLikelySurvive[x].length; y++) {
+    surviveString += willLikelySurvive[x][y];
+    complimentString += complementedStrand[x][y];
+  }
+  console.log("LTS " + surviveString);
+  console.log("COM " + complimentString);
+  console.log("---------------------------------------------");
+}
+//console.log(willLikelySurvive);
+//console.log(complementedStrand);
